@@ -1,163 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SUI Distributor • CSV Batch</title>
-  <style>
-    :root{
-      --bg: #0b0f16;
-      --panel: #0f1623;
-      --muted: #96a0b5;
-      --text: #e6ecff;
-      --primary: #6aa3ff;
-      --primary-2: #3e74ff;
-      --danger: #ff6b6b;
-      --ok: #22c55e;
-      --warn: #f59e0b;
-      --border: #1f2a3c;
-      --shadow: 0 10px 30px rgba(0,0,0,.35);
-      --radius-xl: 18px;
-      --radius: 12px;
-    }
-    *{ box-sizing: border-box; }
-    html,body{ height:100%; }
-    body{
-      margin:0; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
-      background:
-        radial-gradient(1200px 800px at 80% -20%, rgba(62,116,255,.18), transparent 55%),
-        radial-gradient(1200px 800px at -10% 120%, rgba(64,224,208,.10), transparent 55%),
-        var(--bg);
-      background-repeat: no-repeat; background-size: cover; background-attachment: fixed;
-      color: var(--text);
-    }
-    header{padding:24px clamp(16px,4vw,40px);display:flex;justify-content:space-between;align-items:center;gap:16px}
-    .brand{display:flex;align-items:center;gap:12px}
-    .logo{width:40px;height:40px;background:linear-gradient(135deg,var(--primary),#40e0d0);border-radius:12px;box-shadow:var(--shadow)}
-    .title{font-weight:700}
-    .subtitle{color:var(--muted)}
-
-    .container{max-width:1100px;margin:0 auto;padding:0 clamp(16px,4vw,40px) 40px;display:grid;grid-template-columns:1.2fr .8fr;gap:24px}
-    @media (max-width:980px){.container{grid-template-columns:1fr}}
-
-    .panel{background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(0,0,0,0.05)),var(--panel);border:1px solid var(--border);border-radius:var(--radius-xl);box-shadow:var(--shadow)}
-    .panel .head{padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px}
-    .panel .body{padding:18px}
-    .panel h2{margin:0;font-size:1.1rem}
-
-    .actions{display:flex;flex-wrap:wrap;gap:10px}
-    button{background:linear-gradient(180deg,var(--primary),var(--primary-2));color:#fff;border:none;padding:10px 14px;border-radius:12px;font-weight:600;letter-spacing:.2px;cursor:pointer;box-shadow:var(--shadow)}
-    button.ghost{background:transparent;border:1px solid var(--border)}
-    button.ok{background:linear-gradient(180deg,var(--ok),#15803d)}
-
-    .dropzone{display:block;width:100%;border:2px dashed var(--border);border-radius:var(--radius-xl);padding:32px;text-align:center;transition:.2s ease;cursor:pointer}
-    .dropzone:hover{background:rgba(255,255,255,.04)}
-    .dropzone.dragover{border-color:var(--primary);background:rgba(255,255,255,.06)}
-    .dropzone input{display:none}
-
-    table{width:100%;border-collapse:collapse}
-    th,td{padding:10px 8px;border-bottom:1px solid var(--border);font-size:.95rem}
-    th{text-align:left;color:var(--muted)}
-    td.right{text-align:right}
-    tr.invalid{background:rgba(255,107,107,.08)}
-
-    .stat{background:#0c1320;border:1px solid var(--border);border-radius:12px;padding:12px}
-    .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-
-    .log{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;font-size:.92rem;color:#d1e7ff;background:#0a1220;border-radius:12px;border:1px solid var(--border);padding:12px;max-height:240px;overflow:auto}
-    .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace}
-    .muted{color:var(--muted)}
-    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    select, input[type="number"]{background:#0c1320;color:var(--text);border:1px solid var(--border);border-radius:10px;padding:8px}
-  </style>
-</head>
-<body>
-<header>
-  <div class="brand">
-    <div class="logo"></div>
-    <div>
-      <div class="title">SUI Distributor</div>
-      <div class="subtitle">Batch via CSV (<span class="mono">address,value</span>)</div>
-    </div>
-  </div>
-  <div class="actions">
-    <button id="connectWallet" class="ok">Connect Wallet</button>
-    <button id="runTests" class="ghost" title="Run automated browser tests">Run Tests</button>
-  </div>
-</header>
-
-<main class="container">
-  <section class="panel" aria-labelledby="upTitle">
-    <div class="head"><h2 id="upTitle">1) Load CSV</h2><span class="muted">UTF-8</span></div>
-    <div class="body">
-      <label class="dropzone" id="dropzone">
-        <input id="fileInput" type="file" accept=".csv,text/csv" />
-        <div><strong>Drop</strong> the CSV here or click</div>
-        <div class="muted">Header: <span class="mono">address,value</span></div>
-      </label>
-      <div class="actions" style="margin-top:10px">
-        <button id="parseBtn">Read File</button>
-        <button id="sampleBtn" class="ghost">Use Example</button>
-      </div>
-    </div>
-  </section>
-
-  <section class="panel" aria-labelledby="sumTitle">
-    <div class="head"><h2 id="sumTitle">Summary</h2></div>
-    <div class="body">
-      <div class="grid3">
-        <div class="stat"><div id="statRows" style="font-weight:700;font-size:1.2rem">0</div><div class="muted">Rows</div></div>
-        <div class="stat"><div id="statValid" style="font-weight:700;font-size:1.2rem">0</div><div class="muted">Valid</div></div>
-        <div class="stat"><div id="statTotal" style="font-weight:700;font-size:1.2rem">0</div><div class="muted">Total (SUI)</div></div>
-      </div>
-    </div>
-  </section>
-
-  <section class="panel" style="grid-column:1 / -1" aria-labelledby="prevTitle">
-    <div class="head">
-      <h2 id="prevTitle">2) Preview & Validation</h2>
-      <div class="actions">
-        <button id="copyJson" class="ghost">Copy JSON</button>
-        <button id="downloadJson">Download JSON</button>
-      </div>
-    </div>
-    <div class="body">
-      <div style="overflow:auto;border:1px solid var(--border);border-radius:12px">
-        <table id="dataTable">
-          <thead><tr><th>#</th><th>Address</th><th class="right">Value</th><th>Status</th><th>Action</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-      <p class="muted" style="margin:10px 4px 0">Edit the cells to correct. Invalid rows turn red.</p>
-    </div>
-  </section>
-
-  <section class="panel" aria-labelledby="sendTitle">
-    <div class="head"><h2 id="sendTitle">3) On-chain Send</h2></div>
-    <div class="body" style="display:flex;flex-direction:column;gap:12px">
-      <div class="row">
-        <span class="muted">Wallet:</span>
-        <span id="walletAddress" class="mono">(disconnected)</span>
-      </div>
-      <div class="row">
-        <label class="muted">Network</label>
-        <select id="network">
-          <option value="devnet" selected>Devnet</option>
-          <option value="testnet">Testnet</option>
-          <option value="mainnet">Mainnet</option>
-        </select>
-        <label class="muted">Gas budget</label>
-        <input id="gasBudget" type="number" value="10000000" />
-      </div>
-      <div class="row">
-        <label class="muted">Package ID</label>
-        <input id="packageId" class="mono" style="flex:1" value="0xffd6de2d90120298f76d5bf40c8844cd435b6da2609b01709e83cd8e8ddac347" />
-      </div>
-      <button id="sendBatch">Send Batch</button>
-      <pre id="sendLog" class="log">Waiting...</pre>
-    </div>
-  </section>
-</main>
-<script type="module" src="/src/main.js"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SuiFlow • Batch Distributor for SUI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Roboto+Mono:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
 </html>
