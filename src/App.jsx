@@ -16,8 +16,7 @@ export default function App() {
   const { mutateAsync: signAndExecuteTransactionBlock } =
     useSignAndExecuteTransactionBlock();
 
-  const PACKAGE_ID =
-    "0xf261ea0440bf70d2acb6badeb21b76133c7543fa555e3783a6fe646cde2251b8";
+  const PACKAGE_ID = "0xf261ea0440bf70d2acb6badeb21b76133c7543fa555e3783a6fe646cde2251b8";
 
   const handleFile = (e) => {
     const file = e.target.files[0];
@@ -90,7 +89,7 @@ export default function App() {
       await signAndExecuteTransactionBlock(
         {
           transactionBlock: tx,
-          chain: "sui:devnet",
+          chain: "sui:mainnet",
           options: { showEffects: true, showEvents: true },
         },
         {
