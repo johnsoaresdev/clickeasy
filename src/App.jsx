@@ -2,6 +2,7 @@ import {
   ConnectButton,
   useCurrentAccount,
   useSignAndExecuteTransactionBlock,
+  useSuiClientContext,
 } from "@mysten/dapp-kit";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
 import Papa from "papaparse";
@@ -15,8 +16,17 @@ export default function App() {
   const account = useCurrentAccount();
   const { mutateAsync: signAndExecuteTransactionBlock } =
     useSignAndExecuteTransactionBlock();
+  const { network } = useSuiClientContext();
 
-  const PACKAGE_ID = "0xf261ea0440bf70d2acb6badeb21b76133c7543fa555e3783a6fe646cde2251b8";
+  const PACKAGE_ID =
+    "0xf261ea0440bf70d2acb6badeb21b76133c7543fa555e3783a6fe646cde2251b8";
+
+  const explorerBase =
+    network === "mainnet"
+      ? "https://suiexplorer.com/object/"
+      : network === "testnet"
+      ? "https://suiexplorer.com/object/?network=testnet&id="
+      : "https://suiexplorer.com/object/?network=devnet&id=";
 
   const handleFile = (e) => {
     const file = e.target.files[0];
@@ -106,6 +116,13 @@ export default function App() {
     }
   };
 
+  const networkColor =
+    network === "mainnet"
+      ? "#10B981"
+      : network === "testnet"
+      ? "#3B82F6"
+      : "#F59E0B";
+
   return (
     <div className="app">
       <header className="header">
@@ -118,6 +135,31 @@ export default function App() {
           <button className="button ghost" onClick={handleDownloadTemplate}>
             📄 Download CSV Template
           </button>
+        </div>
+
+        {/* 🔍 Feedback visual da rede */}
+        <div
+          style={{
+            marginTop: "10px",
+            fontSize: "0.9rem",
+            color: networkColor,
+            fontFamily: "monospace",
+          }}
+        >
+          🌐 Network: <strong>{network.toUpperCase()}</strong>
+          <br />
+          <a
+            href={`${explorerBase}${PACKAGE_ID}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              color: "#9ca3af",
+              textDecoration: "none",
+              fontSize: "0.8rem",
+            }}
+          >
+            📦 Package ID: {PACKAGE_ID.slice(0, 10)}...
+          </a>
         </div>
       </header>
 
@@ -136,7 +178,9 @@ export default function App() {
               <span>Rows</span>
             </div>
             <div className="stat">
-              <strong>{rows.filter((r) => r.address && r.value > 0).length}</strong>
+              <strong>
+                {rows.filter((r) => r.address && r.value > 0).length}
+              </strong>
               <span>Valid</span>
             </div>
             <div className="stat">
